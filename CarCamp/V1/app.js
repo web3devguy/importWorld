@@ -2,19 +2,13 @@ var express      = require("express"),
     app          = express(),
     bodyParser   = require("body-parser"),
     mongoose     = require("mongoose");
+    Carground    = require("./models/carground");
+    seedDB       = require("./seeds");
 
 mongoose.connect("mongodb://localhost/car_camp");
 app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
-
-// SCHEMA SETUP
-var cargroundSchema = new mongoose.Schema({
-    name: String,
-    image: String,
-    description: String
-});
-
-var Carground = mongoose.model("Carground", cargroundSchema);
+seedDB();
 
 app.get("/", function(req, res){
     res.render("landing");
@@ -27,7 +21,7 @@ app.get("/cargrounds", function(req, res){
         if(err){
             console.log(err);
         } else {
-            res.render("index",{cargrounds:allCargrounds});
+            res.render("cargrounds/index",{cargrounds:allCargrounds});
         }
     });
 });
@@ -51,22 +45,27 @@ app.post("/cargrounds", function(req, res){
 
 // New - show form to create new carground
 app.get("/cargrounds/new", function(req, res) {
-    res.render("new.ejs");
+    res.render("cargrounds/new");
 });
 
 // Show - shows more info about one campground
 app.get("/cargrounds/:id", function(req, res){
   // find the carground with provided ID
-  Carground.findById(req.params.id, function(err, foundCarground){
+  Carground.findById(req.params.id).populate("comments").exec(function(err, foundCarground){
      if(err){
        console.log(err);
      } else {
+       console.log(foundCarground);
        // render show template with that carground
-       res.render("show", {carground: foundCarground});
+       res.render("cargrounds/show", {carground: foundCarground});
      }
   });
   req.params.id
 
+});
+
+app.get("/cargrounds/:id/comments/new", function(req, res){
+ res.render("comments/new");
 });
 
 app.listen(3000, function(){

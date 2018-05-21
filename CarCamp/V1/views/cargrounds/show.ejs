@@ -1,0 +1,14 @@
+<% include ../partials/header %>
+
+<h1><%= carground.name %> </h1>
+
+<img src="<%= carground.image %>">
+
+<p> <%= carground.description %> </p>
+
+<% carground.comments.forEach(function(comment){ %>
+   <p>
+     <strong><%= comment.author %></strong> - <%= comment.text %>
+   </p>
+<% }) %>
+<% include ../partials/footer %>
