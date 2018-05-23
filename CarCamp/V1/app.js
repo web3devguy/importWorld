@@ -1,14 +1,16 @@
 var express      = require("express"),
     app          = express(),
     bodyParser   = require("body-parser"),
-    mongoose     = require("mongoose");
-    Carground    = require("./models/carground");
+    mongoose     = require("mongoose"),
+    Carground    = require("./models/carground"),
+    Comment      = require("./models/comment"),
     seedDB       = require("./seeds");
+
 
 mongoose.connect("mongodb://localhost/car_camp");
 app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
-seedDB();
+// seedDB();
 
 app.get("/", function(req, res){
     res.render("landing");
@@ -72,6 +74,27 @@ app.get("/cargrounds/:id/comments/new", function(req, res){
       res.render("comments/new", {carground: carground});
     }
   });
+});
+
+app.post("/cargrounds/:id/comments", function(req, res){
+  // lookup carground using ID
+  Carground.findById(req.params.id, function(err, carground){
+    if(err){
+      console.log(err);
+      res.redirect("/cargrounds");
+    } else {
+      Comment.create(req.body.comment, function(err, comment){
+        if(err){
+          console.log(err);
+        } else {
+            carground.comments.push(comment);
+            carground.save();
+            res.redirect("/cargrounds/" + carground._id);
+        }
+      });
+    }
+  });
+  // creat new comment
 });
 
 app.listen(3000, function(){
