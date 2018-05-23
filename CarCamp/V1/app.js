@@ -65,7 +65,13 @@ app.get("/cargrounds/:id", function(req, res){
 });
 
 app.get("/cargrounds/:id/comments/new", function(req, res){
- res.render("comments/new");
+  Carground.findById(req.params.id, function(err, carground){
+    if(err){
+      console.log(err);
+    } else {
+      res.render("comments/new", {carground: carground});
+    }
+  });
 });
 
 app.listen(3000, function(){
