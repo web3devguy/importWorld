@@ -1,10 +1,13 @@
-var express      = require("express"),
-    app          = express(),
-    bodyParser   = require("body-parser"),
-    mongoose     = require("mongoose"),
-    Carground    = require("./models/carground"),
-    Comment      = require("./models/comment"),
-    seedDB       = require("./seeds");
+var express       = require("express"),
+    app           = express(),
+    bodyParser    = require("body-parser"),
+    mongoose      = require("mongoose"),
+    passport      = require("passport"),
+    LocalStrategy = require("passport-local"),
+    Carground     = require("./models/carground"),
+    Comment       = require("./models/comment"),
+    User          = require("./models/user"),
+    seedDB        = require("./seeds");
 
 
 mongoose.connect("mongodb://localhost/car_camp");
@@ -12,6 +15,18 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
 app.use(express.static(__dirname + "/public"));
 // seedDB();
+
+// PaSSPORT CONFIGURATION
+app.use(require("express-session")({
+    secret: "Hondas are awesome!",
+    resave: false,
+    saveUninitialized: false
+}));
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(new LocalStrategy(User.authenticate()));
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
 
 app.get("/", function(req, res){
     res.render("landing");
@@ -63,12 +78,15 @@ app.get("/cargrounds/:id", function(req, res){
        res.render("cargrounds/show", {carground: foundCarground});
      }
   });
-  req.params.id
-
+    req.params.id
 });
 
-app.get("/cargrounds/:id/comments/new", function(req, res){
-  Carground.findById(req.params.id, function(err, carground){
+// ===============
+// COMMENTS ROUTES
+// ===============
+// creat new comment
+app.get("/cargrounds/:id/comments/new", isLoggedIn, function(req, res){
+  Carground.findById(req.params.id, isLoggedIn, function(err, carground){
     if(err){
       console.log(err);
     } else {
@@ -95,8 +113,54 @@ app.post("/cargrounds/:id/comments", function(req, res){
       });
     }
   });
-  // creat new comment
 });
+
+// ==============
+// AUTH ROUTES
+// ==============
+// show register form
+app.get("/register", function(req, res){
+  res.render("register");
+});
+// handle sign up logic
+app.post("/register", function(req, res){
+    var newUser = new User({username: req.body.username});
+   User.register(newUser, req.body.password, function(err, user){
+     if(err){
+       console.log(err);
+       return res.render("register")
+     }passport.authenticate("local")(req, res, function(){
+          res.redirect("/cargrounds");
+     });
+   });
+});
+
+// show login form
+app.get("/login", function(req, res){
+    res.render("login");
+});
+// handling login logic -middleWare
+app.post("/login", passport.authenticate("local",
+    {
+        successRedirect: "/cargrounds",
+        failureRedirect: "/login"
+    }), function(req, res){
+
+});
+
+// logout route
+app.get("/logout", function(req, res){
+  req.logout();
+  res.redirect("/cargrounds");
+});
+
+function isLoggedIn(req, res, next){
+    if(req.isAuthenticated()){
+        return next();
+    }
+    res.redirect("/login");
+}
+
 
 app.listen(3000, function(){
     console.log("The CarCamp Server has Started!");
