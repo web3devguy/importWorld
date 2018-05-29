@@ -14,6 +14,8 @@ mongoose.connect("mongodb://localhost/car_camp");
 app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
 app.use(express.static(__dirname + "/public"));
+
+// uncomment this line below if you want to wipe clean all the new cars and new comments
 // seedDB();
 
 // PaSSPORT CONFIGURATION
@@ -28,18 +30,25 @@ passport.use(new LocalStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
+// this is a middleWare that will run for every signle route
+app.use(function(req, res, next){
+  res.locals.currentUser = req.user;
+  next();
+});
+
 app.get("/", function(req, res){
     res.render("landing");
 });
 
 // Index - show all cargrounds
 app.get("/cargrounds", function(req, res){
+
     // Get all cargrounds from DB
     Carground.find({}, function(err, allCargrounds){
         if(err){
             console.log(err);
         } else {
-            res.render("cargrounds/index",{cargrounds:allCargrounds});
+            res.render("cargrounds/index",{cargrounds:allCargrounds, currentUser: req.user});
         }
     });
 });
@@ -78,7 +87,7 @@ app.get("/cargrounds/:id", function(req, res){
        res.render("cargrounds/show", {carground: foundCarground});
      }
   });
-    req.params.id
+    req.params.id;
 });
 
 // ===============
@@ -86,7 +95,7 @@ app.get("/cargrounds/:id", function(req, res){
 // ===============
 // creat new comment
 app.get("/cargrounds/:id/comments/new", isLoggedIn, function(req, res){
-  Carground.findById(req.params.id, isLoggedIn, function(err, carground){
+  Carground.findById(req.params.id, function(err, carground){
     if(err){
       console.log(err);
     } else {
@@ -95,7 +104,7 @@ app.get("/cargrounds/:id/comments/new", isLoggedIn, function(req, res){
   });
 });
 
-app.post("/cargrounds/:id/comments", function(req, res){
+app.post("/cargrounds/:id/comments", isLoggedIn, function(req, res){
   // lookup carground using ID
   Carground.findById(req.params.id, function(err, carground){
     if(err){
@@ -125,11 +134,12 @@ app.get("/register", function(req, res){
 // handle sign up logic
 app.post("/register", function(req, res){
     var newUser = new User({username: req.body.username});
-   User.register(newUser, req.body.password, function(err, user){
+    User.register(newUser, req.body.password, function(err, user){
      if(err){
        console.log(err);
-       return res.render("register")
-     }passport.authenticate("local")(req, res, function(){
+       return res.render("register");
+     }
+     passport.authenticate("local")(req, res, function(){
           res.redirect("/cargrounds");
      });
    });
@@ -145,7 +155,6 @@ app.post("/login", passport.authenticate("local",
         successRedirect: "/cargrounds",
         failureRedirect: "/login"
     }), function(req, res){
-
 });
 
 // logout route
@@ -154,6 +163,7 @@ app.get("/logout", function(req, res){
   res.redirect("/cargrounds");
 });
 
+// the middleware thats giving me a headach!
 function isLoggedIn(req, res, next){
     if(req.isAuthenticated()){
         return next();
