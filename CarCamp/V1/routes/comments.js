@@ -42,8 +42,20 @@ router.post("/", isLoggedIn, function(req, res){
   });
 });
 
+// Comment edit route
 router.get("/:comment_id/edit", function(req, res){
-  res.render("comments/edit");
+  Comment.findById(req.params.comment_id, function(err, foundComment){
+    if(err) {
+      res.redirect("back");
+    } else {
+      res.render("comments/edit", {carground_id: req.params.id, comment: foundComment});
+    }
+  });
+});
+
+// Comment Update
+router.put("/:comment_id", function(req, res){
+  res.send("you hit the update route for comment");
 });
 
 // the middleware thats giving me a headach!
