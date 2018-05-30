@@ -63,7 +63,7 @@ router.get("/:id/edit", checkCargroundOwnership, function(req, res){
 
 
 // UPDATE CARGROUND ROUTE
-router.put("/:id", function(req, res){
+router.put("/:id", checkCargroundOwnership, function(req, res){
   // find and update the correct carground
   Carground.findByIdAndUpdate(req.params.id, req.body.carground, function(err, updatedCarground){
     if(err){

@@ -42,6 +42,10 @@ router.post("/", isLoggedIn, function(req, res){
   });
 });
 
+router.get("/:comment_id/edit", function(req, res){
+  res.render("comments/edit");
+});
+
 // the middleware thats giving me a headach!
 function isLoggedIn(req, res, next){
     if(req.isAuthenticated()){
