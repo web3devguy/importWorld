@@ -54,7 +54,29 @@ router.get("/:id", function(req, res){
   });
 });
 
-// EDIT CARGROUND
+// EDIT CARGROUND ROUTE
+router.get("/:id/edit", function(req, res){
+  Carground.findById(req.params.id, function(err, foundCarground){
+    if(err){
+          res.redirect("/cargrounds");
+      } else {
+          res.render("cargrounds/edit", {carground: foundCarground});
+      }
+  });
+});
+
+router.put("/:id", function(req, res){
+  // find and update the correct carground
+  Carground.findByIdAndUpdate(req.params.id, req.body.carground, function(err, updatedCarground){
+    if(err){
+      res.redirect("/cargrounds");
+    } else {
+      res.redirect("/cargrounds/" + req.params.id);
+    }
+  });
+  // redirect somewhere
+});
+// UPDATE CARGROUND ROUTE
 
 // the middleware thats giving me a headach!
 function isLoggedIn(req, res, next){
