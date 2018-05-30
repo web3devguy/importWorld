@@ -55,14 +55,10 @@ router.get("/:id", function(req, res){
 });
 
 // EDIT CARGROUND ROUTE
-router.get("/:id/edit", function(req, res){
-  Carground.findById(req.params.id, function(err, foundCarground){
-    if(err){
-          res.redirect("/cargrounds");
-      } else {
+router.get("/:id/edit", checkCargroundOwnership, function(req, res){
+    Carground.findById(req.params.id, function(err, foundCarground){
           res.render("cargrounds/edit", {carground: foundCarground});
-      }
-  });
+      });
 });
 
 
@@ -96,6 +92,27 @@ function isLoggedIn(req, res, next){
         return next();
     }
     res.redirect("/login");
+}
+
+function checkCargroundOwnership(req, res, next) {
+  if(req.isAuthenticated()){
+    // does the user own the carground?
+    Carground.findById(req.params.id, function(err, foundCarground){
+            if(err){
+                  res.redirect("back");
+              } else {
+                 // does the user own the carground?
+                  if(foundCarground.author.id.equals(req.user._id)){
+                      next();
+                  } else {
+                    res.redirect("back");
+                  }
+
+              }
+          });
+  } else {
+      res.redirect("back");
+  }
 }
 
 module.exports = router;
