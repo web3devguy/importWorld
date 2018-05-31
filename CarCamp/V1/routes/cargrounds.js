@@ -1,6 +1,7 @@
 var express = require("express");
 var router  = express.Router();
 var Carground = require("../models/carground");
+var middleware = require("../middleware");
 
 // Index - show all cargrounds
 router.get("/", function(req, res){
@@ -16,7 +17,7 @@ router.get("/", function(req, res){
 });
 
 // Create - add new carground to DB
-router.post("/", isLoggedIn, function(req, res){
+router.post("/", middleware.isLoggedIn, function(req, res){
     var name = req.body.name;
     var image = req.body.image;
     var desc = req.body.description;
@@ -37,7 +38,7 @@ router.post("/", isLoggedIn, function(req, res){
 });
 
 // New - show form to create new carground
-router.get("/new", isLoggedIn, function(req, res) {
+router.get("/new", middleware.isLoggedIn, function(req, res) {
     res.render("cargrounds/new");
 });
 
@@ -55,7 +56,7 @@ router.get("/:id", function(req, res){
 });
 
 // EDIT CARGROUND ROUTE
-router.get("/:id/edit", checkCargroundOwnership, function(req, res){
+router.get("/:id/edit", middleware.checkCargroundOwnership, function(req, res){
     Carground.findById(req.params.id, function(err, foundCarground){
           res.render("cargrounds/edit", {carground: foundCarground});
       });
@@ -63,7 +64,7 @@ router.get("/:id/edit", checkCargroundOwnership, function(req, res){
 
 
 // UPDATE CARGROUND ROUTE
-router.put("/:id", checkCargroundOwnership, function(req, res){
+router.put("/:id", middleware.checkCargroundOwnership, function(req, res){
   // find and update the correct carground
   Carground.findByIdAndUpdate(req.params.id, req.body.carground, function(err, updatedCarground){
     if(err){
@@ -76,7 +77,7 @@ router.put("/:id", checkCargroundOwnership, function(req, res){
 });
 
 // Destroy Carground Route
-router.delete("/:id", function(req, res){
+router.delete("/:id", middleware.checkCargroundOwnership, function(req, res){
   Carground.findByIdAndRemove(req.params.id, function(err){
     if(err){
       res.redirect("/cargrounds");
@@ -85,34 +86,5 @@ router.delete("/:id", function(req, res){
     }
   });
 });
-
-// the middleware thats giving me a headach!
-function isLoggedIn(req, res, next){
-    if(req.isAuthenticated()){
-        return next();
-    }
-    res.redirect("/login");
-}
-
-function checkCargroundOwnership(req, res, next) {
-  if(req.isAuthenticated()){
-    // does the user own the carground?
-    Carground.findById(req.params.id, function(err, foundCarground){
-            if(err){
-                  res.redirect("back");
-              } else {
-                 // does the user own the carground?
-                  if(foundCarground.author.id.equals(req.user._id)){
-                      next();
-                  } else {
-                    res.redirect("back");
-                  }
-
-              }
-          });
-  } else {
-      res.redirect("back");
-  }
-}
 
 module.exports = router;

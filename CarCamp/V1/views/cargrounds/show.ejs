@@ -40,11 +40,13 @@
                     <strong><%= comment.author.username %></strong>
                     <span class="pull-right">10 days ago</span>
                     <p><%= comment.text %></p>
+                    <% if(currentUser && comment.author.id.equals(currentUser._id)){ %>
                     <a class="btn btn-xs btn-warning"
                         href="/cargrounds/<%=carground._id %>/comments/<%=comment._id%>/edit">Edit</a>
                         <form action="/cargrounds/<%=carground._id %>/comments/<%=comment._id%>?_method=DELETE" method="POST" class="delete-form">
                           <input  type="submit" class="btn btn-xs btn-danger" value="Delete">
                         </form>
+                    <% } %>
               </div>
             </div>
           <% }) %>
