@@ -23,7 +23,7 @@
             </p>
             <% if(currentUser && carground.author.id.equals(currentUser._id)){ %>
             <a class="btn btn-warning" href="/cargrounds/<%= carground._id %>/edit">Edit</a>
-            <form id="delete-form" action="/cargrounds/<%= carground._id %>?_method=DELETE" method="POST">
+            <form class="delete-form" action="/cargrounds/<%= carground._id %>?_method=DELETE" method="POST">
               <button class="btn btn-danger">Delete</button>
             </form>
             <% } %>
@@ -41,9 +41,10 @@
                     <span class="pull-right">10 days ago</span>
                     <p><%= comment.text %></p>
                     <a class="btn btn-xs btn-warning"
-                        href="/cargrounds/<%=carground._id %>/comments/<%=comment._id%>/edit">
-                        Edit
-                    </a>
+                        href="/cargrounds/<%=carground._id %>/comments/<%=comment._id%>/edit">Edit</a>
+                        <form action="/cargrounds/<%=carground._id %>/comments/<%=comment._id%>?_method=DELETE" method="POST" class="delete-form">
+                          <input  type="submit" class="btn btn-xs btn-danger" value="Delete">
+                        </form>
               </div>
             </div>
           <% }) %>
