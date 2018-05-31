@@ -15,7 +15,6 @@ middlewareObj.checkCargroundOwnership = function(req, res, next) {
                   } else {
                     res.redirect("back");
                   }
-
               }
           });
   } else {
@@ -48,6 +47,7 @@ middlewareObj.isLoggedIn = function(req, res, next){
     if(req.isAuthenticated()){
         return next();
     }
+    req.flash("error", "Please Login First!");
     res.redirect("/login");
 };
 
