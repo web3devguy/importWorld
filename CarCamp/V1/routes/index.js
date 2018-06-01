@@ -21,17 +21,18 @@ router.post("/register", function(req, res){
     User.register(newUser, req.body.password, function(err, user){
      if(err){
        console.log(err);
-       return res.render("register");
+       return res.render("register", {"error": err.message});
      }
      passport.authenticate("local")(req, res, function(){
-          res.redirect("/cargrounds");
+        req.flash("success", "Successfully Signed Up! Nice to meet you " + req.body.username);
+        res.redirect("/cargrounds");
      });
    });
 });
 
 // show login form
 router.get("/login", function(req, res){
-    res.render("login", {message: req.flash("error")});
+    res.render("login");
 });
 // handling login logic -middleWare
 router.post("/login", passport.authenticate("local",
@@ -44,6 +45,7 @@ router.post("/login", passport.authenticate("local",
 // logout route
 router.get("/logout", function(req, res){
   req.logout();
+  req.flash("error", "Logged You Out!");
   res.redirect("/cargrounds");
 });
 

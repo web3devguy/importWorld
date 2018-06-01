@@ -1,7 +1,7 @@
-var express   = require("express");
-var router    = express.Router({mergeParams: true});
-var Carground = require("../models/carground");
-var Comment   = require("../models/comment");
+var express    = require("express");
+var router     = express.Router({mergeParams: true});
+var Carground  = require("../models/carground");
+var Comment    = require("../models/comment");
 var middleware = require("../middleware");
 
 // creat new comment
@@ -36,6 +36,7 @@ router.post("/", middleware.isLoggedIn, function(req, res){
             carground.comments.push(comment);
             carground.save();
             console.log(comment);
+            req.flash("success", "Successfully added a comment");
             res.redirect("/cargrounds/" + carground._id);
         }
       });
@@ -71,6 +72,7 @@ router.delete("/:comment_id", middleware.checkCommentOwnership, function(req, re
     if(err){
       res.redirect("back");
     } else {
+      req.flash("success", "Comment Deleted!");
       res.redirect("/cargrounds/" + req.params.id);
     }
   });

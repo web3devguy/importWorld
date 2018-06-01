@@ -1,15 +1,15 @@
-var express       = require("express"),
-    app           = express(),
-    bodyParser    = require("body-parser"),
-    mongoose      = require("mongoose"),
+var express        = require("express"),
+    app            = express(),
+    bodyParser     = require("body-parser"),
+    mongoose       = require("mongoose"),
     flash          = require("connect-flash"),
-    passport      = require("passport"),
-    LocalStrategy = require("passport-local"),
+    passport       = require("passport"),
+    LocalStrategy  = require("passport-local"),
     methodOverride = require("method-override"),
-    Carground     = require("./models/carground"),
-    Comment       = require("./models/comment"),
-    User          = require("./models/user"),
-    seedDB        = require("./seeds");
+    Carground      = require("./models/carground"),
+    Comment        = require("./models/comment"),
+    User           = require("./models/user"),
+    seedDB         = require("./seeds");
 
 // requiring routes
 var commentRoutes   = require("./routes/comments"),
@@ -41,6 +41,8 @@ passport.deserializeUser(User.deserializeUser());
 // this is a middleWare that will run for every signle route
 app.use(function(req, res, next){
   res.locals.currentUser = req.user;
+  res.locals.error = req.flash("error");
+  res.locals.success = req.flash("success");
   next();
 });
 
